@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    .weather-container {
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 10px;
+      background: #f4f4f4;
+      display: inline-block;
+      width: 300px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      font-size: 2rem;
+    }
+    input {
+      padding: 10px;
+      font-size: 1rem;
+      margin-right: 10px;
+      width: 200px;
+    }
+    button {
+      padding: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .weather-details {
+      margin-top: 20px;
+    }
+    .weather-details div {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Weather App</h1>
+  <p>Enter a location or allow location access to get the current weather.</p>
+  <div>
+    <input type="text" id="locationInput" placeholder="Enter location">
+    <button onclick="fetchWeatherByLocation()">Get Weather</button>
+    <button onclick="fetchWeatherByGeolocation()">Use My Location</button>
+  </div>
+  
+  <div id="weatherContainer" class="weather-container" style="display:none;">
+    <h2 id="cityName"></h2>
+    <div class="weather-details">
+      <div><strong>Temperature:</strong> <span id="temperature"></span> °C</div>
+      <div><strong>Condition:</strong> <span id="condition"></span></div>
+      <div><strong>Humidity:</strong> <span id="humidity"></span> %</div>
+      <div><strong>Wind Speed:</strong> <span id="windSpeed"></span> m/s</div>
+    </div>
+  </div>
+
+  <script>
+    const apiKey = 'YOUR_API_KEY_HERE'; // Replace with your OpenWeatherMap API key
+    const weatherContainer = document.getElementById('weatherContainer');
+    const cityName = document.getElementById('cityName');
+    const temperature = document.getElementById('temperature');
+    const condition = document.getElementById('condition');
+    const humidity = document.getElementById('humidity');
+    const windSpeed = document.getElementById('windSpeed');
+
+    async function fetchWeather(url) {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Weather data not found');
+        const data = await response.json();
+        displayWeather(data);
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    function fetchWeatherByLocation() {
+      const location = document.getElementById('locationInput').value;
+      if (!location) {
+        alert('Please enter a location');
+        return;
+      }
+      const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=metric&appid=${apiKey}`;
+      fetchWeather(url);
+    }
+
+    function fetchWeatherByGeolocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${apiKey}`;
+            fetchWeather(url);
+          },
+          () => alert('Unable to retrieve your location')
+        );
+      } else {
+        alert('Geolocation is not supported by your browser');
+      }
+    }
+
+    function displayWeather(data) {
+      weatherContainer.style.display = 'block';
+      cityName.textContent = data.name;
+      temperature.textContent = data.main.temp;
+      condition.textContent = data.weather[0].description;
+      humidity.textContent = data.main.humidity;
+      windSpeed.textContent = data.wind.speed;
+    }
+  </script>
+</body>
+</html>
